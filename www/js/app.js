@@ -75,17 +75,17 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.services'])
           controller: 'AccountCtrl'
         }
       }
-    });
+    })
 
 
-    $routeProvider.when('/home', {
+    .state('/home', {
       templateUrl: 'templates/app.html',
       controller: 'AppCtrl'
-    });
+    })
 
     // if the url matches something like /pet/2 then this route
     // will fire off the PetCtrl controller (controllers.js)
-    $routeProvider.when('/pet/:petId', {
+    .state('/pet/:petId', {
       templateUrl: 'templates/pet.html',
       controller: 'PetCtrl'
     });
