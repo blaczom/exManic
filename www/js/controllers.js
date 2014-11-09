@@ -12,7 +12,6 @@ angular.module('exManic.controllers', [])
   })
   .controller('testCtrl', function($scope, exUtil){
     $scope.test1 = exUtil.createUUID();
-
     return;
 
   } )

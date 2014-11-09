@@ -1,8 +1,5 @@
-angular.module('exManic.services', [])
+angular.module('exManic.services', ['angular-md5'])
 
-/**
- * A simple example service that returns some data.
- */
 .factory('Friends', function() {
   // Some fake testing data
   var friends = [
@@ -77,9 +74,72 @@ angular.module('exManic.services', [])
     else
       return( l_date.join('-') + ' ' + l_time.join(':')); // '2014-01-02 09:33:33'
   };
+  var getDate = function(){ return getDateTime(arguments[0], true) };
+
   return {
     createUUID : UUID.prototype.createUUID,
     getDateTime : getDateTime,    // 向后一天，用 new Date( new Date() - 0 + 1*86400000)  1小时3600000
-    getDate : function(){ return getDateTime(arguments[0], true) }
+    getDate : getDate
   }
-});
+})
+.factory('exDb', ['$q', '$location',function($q, $location){
+  if(window.localStorage){
+    console.log("check success -- > localStorage support!");
+  }else{
+    window.alert('This browser does NOT support localStorage. pls choose allow localstorage');
+  }
+  var localStorageService = window.localStorage;
+  var _debug = true;
+  var objUser = function(){
+    this.NICKNAME = '';
+    this.PASS = '';
+    this.REMPASS = '';
+    this._exState = "new";  // new , clean, dirty.
+  };
+  var objTask = function(){
+    this.UUID = exUtil.createUUID();
+    this.UPTASK = '';
+    this.PLANSTART = exUtil.getDateTime(new Date());
+    this.PLANFINISH = exUtil.getDateTime(new Date( new Date() - 0 + 1*86400000));
+    this.FINISH = '';
+    this.OWNER = '';
+    this.CONTENT = '';
+    this.MEMPOINT = '';
+    this.MEMEN = '';
+    this.MEMTIMER = '';
+    this.MEDIAFILE = '';
+    this.STATE = '';
+    this._exState='new';
+  };
+  var _currentUser = (localStorageService.getItem('exManlocalUser') || ""),
+   _useWord = (localStorageService.getItem('exManlocalWord') || ""),
+   _remWord = (localStorageService.getItem('exManlocalRem') || "");
+
+  return{
+    userNew: function() { return new objUser() },
+    taskNew: function() { return new objTask() },
+    taskState : ['计划','进行','结束'],
+    memPoint : '1,1,2,4,7,15',
+    setUser: function(aUser) { _currentUser = aUser;  localStorageService.setItem('exManlocalUser', aUser) },
+    getUser: function(){ return _currentUser },
+    setWord: function(aParam) { _useWord = aParam; localStorageService.setItem('exManlocalWord', aParam) },
+    getWord: function(){return _useWord},
+    getRem: function(){return (_remWord=="true" || _remWord==true)?true:false; },
+    setRem: function(aParam) {  _remWord = aParam;  localStorageService.setItem('exManlocalRem', aParam);
+      if (!aParam){   localStorageService.setItem('exManlocalWord', '');  }
+    },
+    checkRtn: function(aRtn) {
+      if (aRtn.rtnCode == 0) {
+        switch (aRtn.appendOper) {
+          case 'login':
+            $location.path('/');
+            return false;
+            break;
+        }
+      }
+      return true;
+    },
+    log: function(){ if (_debug) console.log(arguments) }
+  }
+}]);
+

@@ -1,6 +1,10 @@
-angular.module('exManic', ['ionic', 'exManic.controllers', 'exManic.services'])
-
-.run(function($ionicPlatform) {
+angular.module('exManic', ['ionic', 'exManic.services', 'exManic.controllers', 'exManic.test'])
+.run(function($ionicPlatform, exLocalDb, exTestUtil) {
+    // exTestUtil, exTestDb, exTestLocalDb, exTestController
+/*
+angular.module('exManic', ['ionic', 'exManic.services', 'exManic.controllers'])
+.run(function($ionicPlatform, exLocalDb, exTestUtil) {
+*/
   $ionicPlatform.ready(function() {
     // Hide the accessory bar by default (remove this to show the accessory bar above the keyboard
     // for form inputs)
@@ -11,9 +15,14 @@ angular.module('exManic', ['ionic', 'exManic.controllers', 'exManic.services'])
       // org.apache.cordova.statusbar required
       StatusBar.styleDefault();
     }
+    exLocalDb.initDb();
+    // <script src="/js/exTest.js"></script>
+    // exTest, exTest.test();
+    console.log("测试exTestUtil", exTestUtil.checkResult());
   });
-})
 
+
+})
 .config(function($stateProvider, $urlRouterProvider) {
   $stateProvider
     // setup an abstract state for the tabs directive
@@ -61,7 +70,6 @@ angular.module('exManic', ['ionic', 'exManic.controllers', 'exManic.services'])
         }
       }
     })
-
     .state('tab.test', {
       url: '/test',
       views: {

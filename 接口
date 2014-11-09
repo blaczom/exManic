@@ -3,7 +3,7 @@ exbrick
 
 
       <script src="js/exAngDb.js" type="text/javascript"></script>
-      <script src="js/exClientDb.js" type="text/javascript"></script>
+      <script src="js/exWebSqlDb.js" type="text/javascript"></script>
       <script src="js/exAngDbAccess.js" type="text/javascript"></script>
 
 
