@@ -1,27 +1,41 @@
 /* Empty. Add your own CSS if you like */
 
-.exform{
+.ex-form{
     margin: 0 auto;
 }
-.exform .blockline {
-    margin-bottom: 5px;
+.ex-block {
     display:block;
+}
+.ex-form .ex-brick{
+    border:1px solid #00F;
+    display: inline-block;
+}
+.ex-form .ex-alignleft{
+    text-align: left;
 }
 
 /* 服务器返回的信息提示。高亮 */
-.mark-info{
+.ex-markinfo{
     background-color:#F9F400;
     padding: 2px;
 }
-
-.center-me {
+.ex-center {
+    margin-left:auto;
+    margin-right:auto;
     text-align: center;
-    border:1px solid #00F;
+}
+.ex-center4input {
+    margin-left:auto;
+    margin-right:auto;
+    text-align: center;
+    width: 300px;
 }
 
-span{
+.ex-showme {
     border:1px solid #00F;
-    display: inline-block;
+}
+.ex-showme .ex-showme {
+    border:1px solid red;
 }
 
 

@@ -1,28 +1,24 @@
-angular.module('starter.controllers', ['exFactory'])
+angular.module('exManic.controllers', [])
 
-  .controller('DashCtrl', function($scope) {
-      $scope.items = [{title:'1', descripton:'1'}, {title:'2', descripton:'2'}]
-  })
-
-
-
-  .controller('FriendsCtrl', function($scope, Friends) {
+  .controller('taskListCtrl', function($scope, Friends) {
     $scope.friends = Friends.all();
   })
 
-  .controller('FriendDetailCtrl', function($scope, $stateParams, Friends) {
+  .controller('taskDetailCtrl', function($scope, $stateParams, Friends) {
     $scope.friend = Friends.get($stateParams.friendId);
   })
 
-  .controller('AccountCtrl', function($scope) {
+  .controller('registCtrl', function($scope) {
   })
+  .controller('testCtrl', function($scope, exUtil){
+    $scope.test1 = exUtil.createUUID();
 
-  .controller('AppCtrl', function(){return;} )
+    return;
 
-  .controller('TestCtrl', function(){return;} )
+  } )
 
-  .controller('LoginCtrl', ['$scope','$location','exDb','exAccess',function($scope,$location,exDb,exAccess) {
-
+  .controller('loginCtrl', ['$scope','$location',function($scope,$location) {
+/*
         var lp = $scope;
         lp.user = exDb.userNew();
         lp.user.NICKNAME =exDb.getUser();
@@ -44,6 +40,7 @@ angular.module('starter.controllers', ['exFactory'])
             }
           }, function (error) {  lp.rtnInfo = JSON.stringify(status); });
         };
+*/
       }])
 
   .controller('index', function($scope, $ionicModal) {
