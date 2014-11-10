@@ -1,5 +1,5 @@
 angular.module('exManic', ['ionic', 'exManic.services', 'exManic.controllers', 'exManic.test'])
-.run(function($ionicPlatform, exLocalDb, exTestUtil) {
+.run(function($ionicPlatform, exLocalDb, exTestUtil, exTestDb, exTestLocalDb) {
     // exTestUtil, exTestDb, exTestLocalDb, exTestController
 /*
 angular.module('exManic', ['ionic', 'exManic.services', 'exManic.controllers'])
@@ -19,6 +19,9 @@ angular.module('exManic', ['ionic', 'exManic.services', 'exManic.controllers'])
     // <script src="/js/exTest.js"></script>
     // exTest, exTest.test();
     console.log("测试exTestUtil", exTestUtil.checkResult());
+    console.log("测试exTestDb", exTestDb.checkResult());
+    console.log("测试exTestLocalDb", exTestLocalDb.checkResult());
+
   });
 
 

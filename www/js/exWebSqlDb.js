@@ -5,7 +5,7 @@
 
 angular.module('exManic.services').
 factory('exLocalDb', ['$q', '$window','exDb', function($q, $window,exDb){
-  var gdb =  $window.openDatabase("exManicClient", '1.0', 'exman clientdb', 2000000);
+  var gdb =  $window.openDatabase("exManicClient", '1.0', 'exManic Client Database', 2000000);
   var initDb = function() {
     exDb.log("--- checking databse file ---");
     var l_run = [];
@@ -35,29 +35,29 @@ factory('exLocalDb', ['$q', '$window','exDb', function($q, $window,exDb){
       }
     );
   };
-  var trans2Json = function (aData){      // 将websql的返回数据，转化为数组json记录。
+  var trans2Json = function (aData){      // 将websql的返回数据集 {} ，转化为data数组的json记录。
     var la_item = [];
     for (var i = 0; i < aData.rows.length; i ++ )
       la_item.push(aData.rows.item(i));
     return angular.copy(la_item);
   };
   var runSqlPromise = function (aSql, aParam)  {
-    exDb.log("exLocal runsql with param: " + aSql);
-    exDb.log(aParam);
-      if (toString.apply(aParam) !== "[object Array]") aParam= [aParam];
-      var deferred = $q.defer();
-      gdb.transaction( function(tx) {
-          tx.executeSql(aSql, aParam,
-              function(tx, aData) { deferred.resolve(trans2Json(aData)) },
-              function(tx, error) { deferred.reject(error.message) }
-          )
-      });
-      return deferred.promise;
+    if (aParam) { if (toString.apply(aParam) !== "[object Array]") aParam = [aParam]; }
+    else
+      aParam = [];
+    exDb.log("--exLocal runsql with param: --" + aSql, aParam);
+    var deferred = $q.defer();
+    gdb.transaction( function(tx) {
+        tx.executeSql(aSql, aParam,
+            function(tx, aData) { deferred.resolve(trans2Json(aData)) },
+            function(tx, error) { deferred.reject(error.message) }
+        )
+    });
+    return deferred.promise;
   };
   var runSql = function(aSql, aParam, aCallback) {
-    exDb.log("runsql run here with param: " + aSql);
-    exDb.log(aParam);
     if (toString.apply(aParam) !== "[object Array]") aParam= [aParam];
+    exDb.log("runsql run here with param: " + aSql, aParam);
     gdb.transaction(
         function(tx) {
             tx.executeSql(aSql, aParam

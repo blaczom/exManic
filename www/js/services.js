@@ -82,7 +82,7 @@ angular.module('exManic.services', ['angular-md5'])
     getDate : getDate
   }
 })
-.factory('exDb', ['$q', '$location',function($q, $location){
+.factory('exDb', ['$q','$location','exUtil',function($q,$location,exUtil){
   if(window.localStorage){
     console.log("check success -- > localStorage support!");
   }else{
@@ -111,23 +111,28 @@ angular.module('exManic.services', ['angular-md5'])
     this.STATE = '';
     this._exState='new';
   };
-  var _currentUser = (localStorageService.getItem('exManlocalUser') || ""),
-   _useWord = (localStorageService.getItem('exManlocalWord') || ""),
-   _remWord = (localStorageService.getItem('exManlocalRem') || "");
+  var _currentUser = (localStorageService.getItem('exManicLocalUser') || ""),
+    _userList = (localStorageService.getItem('exManicLocalUserList') || "{}");
 
   return{
     userNew: function() { return new objUser() },
     taskNew: function() { return new objTask() },
     taskState : ['计划','进行','结束'],
     memPoint : '1,1,2,4,7,15',
-    setUser: function(aUser) { _currentUser = aUser;  localStorageService.setItem('exManlocalUser', aUser) },
-    getUser: function(){ return _currentUser },
-    setWord: function(aParam) { _useWord = aParam; localStorageService.setItem('exManlocalWord', aParam) },
-    getWord: function(){return _useWord},
-    getRem: function(){return (_remWord=="true" || _remWord==true)?true:false; },
-    setRem: function(aParam) {  _remWord = aParam;  localStorageService.setItem('exManlocalRem', aParam);
-      if (!aParam){   localStorageService.setItem('exManlocalWord', '');  }
+    getUserList: function(){  return JSON.parse(_userList); },
+    setUserList: function(aUser, aPass, aRem) {  // 设置当前用户，名称，密码和保存密码。
+      var l_t = JSON.parse(_userList); l_t[aUser] = {pass:aPass,rem:aRem};
+      _userList = JSON.stringify(l_t); localStorageService.setItem('exManicLocalUserList', _userList);
+      _currentUser = aUser; localStorageService.setItem('exManiclocalUser', aUser)
     },
+    clearUserList: function() { _userList = '{}' },
+    getUser: function(){  // return {name:, pass:, rem:}
+      var l_name = (arguments.length > 0)?arguments[0]:_currentUser;
+      var l_user = JSON.parse(_userList)[l_name];
+      if (l_user) l_user.name = l_name;
+      return l_user;
+    },
+    verifyBool: function (aParam){ return (aParam==true||aParam=="true")?true:false;  },
     checkRtn: function(aRtn) {
       if (aRtn.rtnCode == 0) {
         switch (aRtn.appendOper) {
