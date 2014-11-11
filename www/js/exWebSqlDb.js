@@ -31,19 +31,14 @@ factory('exLocalDb',['$q','$window','exStore','exUtil',function($q,$window,exSto
     gdb.transaction(
       function (tx) {
         for (var i in l_run) {
-          exStore.log(l_run[i]);
+          // exStore.log(l_run[i]);
           tx.executeSql(l_run[i], [],
             function(tx,success){},
             function(tx,err){ exStore.log(err.message) } );
         }
       },
-      function (tx, err) {
-        exStore.log('fail!!! create database failed!');
-        exStore.log(err);
-      },
-      function () {
-        exStore.log(' -- check dabase successful over -- ');
-      }
+      function (tx, err) { exStore.log('fail!!! create database failed!', err); },
+      function () { exStore.log(' -- check dabase successful over -- ');   }
     );
   };
   var trans2Json = function (aData){      // 将websql的返回数据集 {} ，转化为data数组的json记录。
@@ -142,6 +137,9 @@ factory('exLocalDb',['$q','$window','exStore','exUtil',function($q,$window,exSto
             function(tx, aErr){ exStore.log(aErr.message); aCallback(aErr.message, null) }
           );
         }
+      ,
+        function (tx, err) { exStore.log('fail!!! create database failed!', err); },
+        function () { exStore.log(' -- check dabase successful over -- ');   }
       );
     };
   var objUser = function(){
@@ -149,18 +147,18 @@ factory('exLocalDb',['$q','$window','exStore','exUtil',function($q,$window,exSto
     this.PASS = '';
     this.REMPASS = '';
     this._exState = "new";  // new , clean, dirty.
-
+    objUser.prototype.getByNickName = function (aNick, aCallback) {
+      runSql("select * from user where NICKNAME= ?" , [aNick], aCallback);
+    };
     objUser.prototype.new = function(){ return new objUser(); };
     objUser.prototype.save = function (aUser, aCallback){  comSave(aUser, 'USER', aCallback); };
-    objUser.prototype.delete = function(aUUID, aCallback){
-      runSql("delete from USER where UUID = '?'", aUUID, function (err, row) {
+    objUser.prototype.delete = function(aNickName, aCallback){
+      runSql("delete from USER where NICKNAME = ?", aNickName, function (err, row) {
         if (err) {  console.log("delete user Error: " + err.message);   }
         aCallback(err, row);
       });
     };
-    objUser.prototype.getByNickName = function (aNick, aCallback) {
-      runSql("select * from user where NICKNAME= ?" , aNick, aCallback);
-    }
+
   };
   var objTask = function(){
     this.UUID = exUtil.createUUID();
@@ -241,11 +239,13 @@ factory('exLocalDb',['$q','$window','exStore','exUtil',function($q,$window,exSto
     runSqlPromise: runSqlPromise,
     initDb: initDb,
     db: gdb,
-    userNew: function() { return new objUser() },
-    taskNew: function() { return new objTask() },
+    user: new objUser(),
+    task: new objTask(),
     taskState : ['计划','进行','结束'],
     memPoint : '1,1,2,4,7,15',
-    appendix : appendix
+    appendix : appendix ,
+    genSave : genSave ,
+    comSave : comSave
   };
 }]);
 

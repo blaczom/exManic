@@ -1,9 +1,11 @@
+// /* 测试脚本
 angular.module('exManic', ['ionic', 'exManic.services', 'exManic.controllers', 'exManic.test'])
-.run(function($ionicPlatform, exLocalDb, exTestUtil, exTestDb, exTestLocalDb) {
-    // exTestUtil, exTestDb, exTestLocalDb, exTestController
-/*
+.run(function($ionicPlatform,exLocalDb,exTestUtil,exTestDb,exTestLocalDb,$timeout) {
+// */
+
+/*  跳过测试脚本。
 angular.module('exManic', ['ionic', 'exManic.services', 'exManic.controllers'])
-.run(function($ionicPlatform, exLocalDb, exTestUtil) {
+.run(function($ionicPlatform, exLocalDb) {
 */
   $ionicPlatform.ready(function() {
     // Hide the accessory bar by default (remove this to show the accessory bar above the keyboard
@@ -16,12 +18,13 @@ angular.module('exManic', ['ionic', 'exManic.services', 'exManic.controllers'])
       StatusBar.styleDefault();
     }
     exLocalDb.initDb();
-    // <script src="/js/exTest.js"></script>
-    // exTest, exTest.test();
-    console.log("============测试exUtil--", exTestUtil.checkResult());
-    console.log("============测试exStore", exTestDb.checkResult());
-    console.log("============测试exLocalDb", exTestLocalDb.checkResult());
 
+    // /* 这里是测试脚本，可以跳过。
+    $timeout( function() {console.log("====测试exUtil--", exTestUtil.checkResult()); },2000)
+    .then( function() { console.log("====测试exStore", exTestDb.checkResult());})
+    .then(function() { console.log("=====测试exLocalDb", exTestLocalDb.checkResult()); });
+
+    // */
   });
 
 

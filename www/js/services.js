@@ -98,12 +98,12 @@ angular.module('exManic.services', ['angular-md5'])
 
     getUserList: function(){  return JSON.parse(_userList); },
     setUserList: function(aUser, aPass, aRem) {  // 设置当前用户，名称，密码和保存密码。
-      var l_t = JSON.parse(_userList); l_t[aUser] = {pass:aPass,rem:aRem};
+      var l_t = JSON.parse(_userList); l_t[aUser] = {pass:aPass,rempass:aRem};
       _userList = JSON.stringify(l_t); localStorageService.setItem('exManicLocalUserList', _userList);
       _currentUser = aUser; localStorageService.setItem('exManiclocalUser', aUser)
     },
     clearUserList: function() { _userList = '{}' },
-    getUser: function(){  // return {name:, pass:, rem:}
+    getUser: function(){  // return {name:, pass:, rempass:}
       var l_name = (arguments.length > 0)?arguments[0]:_currentUser;
       var l_user = JSON.parse(_userList)[l_name];
       if (l_user) l_user.name = l_name;
