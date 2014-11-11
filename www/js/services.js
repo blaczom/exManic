@@ -82,7 +82,7 @@ angular.module('exManic.services', ['angular-md5'])
     getDate : getDate
   }
 })
-.factory('exDb', ['$q','$location','exUtil',function($q,$location,exUtil){
+.factory('exStore', ['$q','$location','exUtil',function($q,$location,exUtil){
   if(window.localStorage){
     console.log("check success -- > localStorage support!");
   }else{
@@ -90,35 +90,12 @@ angular.module('exManic.services', ['angular-md5'])
   }
   var localStorageService = window.localStorage;
   var _debug = true;
-  var objUser = function(){
-    this.NICKNAME = '';
-    this.PASS = '';
-    this.REMPASS = '';
-    this._exState = "new";  // new , clean, dirty.
-  };
-  var objTask = function(){
-    this.UUID = exUtil.createUUID();
-    this.UPTASK = '';
-    this.PLANSTART = exUtil.getDateTime(new Date());
-    this.PLANFINISH = exUtil.getDateTime(new Date( new Date() - 0 + 1*86400000));
-    this.FINISH = '';
-    this.OWNER = '';
-    this.CONTENT = '';
-    this.MEMPOINT = '';
-    this.MEMEN = '';
-    this.MEMTIMER = '';
-    this.MEDIAFILE = '';
-    this.STATE = '';
-    this._exState='new';
-  };
+
   var _currentUser = (localStorageService.getItem('exManicLocalUser') || ""),
     _userList = (localStorageService.getItem('exManicLocalUserList') || "{}");
 
   return{
-    userNew: function() { return new objUser() },
-    taskNew: function() { return new objTask() },
-    taskState : ['计划','进行','结束'],
-    memPoint : '1,1,2,4,7,15',
+
     getUserList: function(){  return JSON.parse(_userList); },
     setUserList: function(aUser, aPass, aRem) {  // 设置当前用户，名称，密码和保存密码。
       var l_t = JSON.parse(_userList); l_t[aUser] = {pass:aPass,rem:aRem};

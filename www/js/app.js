@@ -18,9 +18,9 @@ angular.module('exManic', ['ionic', 'exManic.services', 'exManic.controllers'])
     exLocalDb.initDb();
     // <script src="/js/exTest.js"></script>
     // exTest, exTest.test();
-    console.log("测试exTestUtil", exTestUtil.checkResult());
-    console.log("测试exTestDb", exTestDb.checkResult());
-    console.log("测试exTestLocalDb", exTestLocalDb.checkResult());
+    console.log("============测试exUtil--", exTestUtil.checkResult());
+    console.log("============测试exStore", exTestDb.checkResult());
+    console.log("============测试exLocalDb", exTestLocalDb.checkResult());
 
   });
 

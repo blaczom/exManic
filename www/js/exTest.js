@@ -43,34 +43,29 @@ angular.module('exManic.test', ['exManic.services', 'exManic.controllers'])
     }
   }
 })
-.factory('exTestDb', function(exDb){
+.factory('exTestDb', function(exStore){
   return {
     checkResult:function(){
       var l_rtn = true;
-      var l_testObj = gTestObj("exDb.userNew", exDb.userNew());
-      if (l_testObj.obj.hasOwnProperty('NICKNAME')) logOk(l_testObj); else l_rtn = logNo(l_testObj);
-      l_testObj = gTestObj("exDb.taskNew", exDb.taskNew());
-      if (l_testObj.obj.hasOwnProperty('UUID')) logOk(l_testObj); else l_rtn = logNo(l_testObj);
+      var l_testObj = gTestObj("exStore.verifyBool", exStore.verifyBool('true'));
+      if (exStore.verifyBool(1) && exStore.verifyBool('1') && exStore.verifyBool('true')) logOk(l_testObj); else l_rtn = logNo(l_testObj);
+      if (exStore.verifyBool(0) || exStore.verifyBool('0') || exStore.verifyBool('false'))  l_rtn = logNo(l_testObj); else logOk(l_testObj);
 
-      l_testObj = gTestObj("exDb.verifyBool", exDb.verifyBool('true'));
-      if (exDb.verifyBool(1) && exDb.verifyBool('1') && exDb.verifyBool('true')) logOk(l_testObj); else l_rtn = logNo(l_testObj);
-      if (exDb.verifyBool(0) || exDb.verifyBool('0') || exDb.verifyBool('false'))  l_rtn = logNo(l_testObj); else logOk(l_testObj);
-
-      exDb.setUserList('dh', 'dh', '1');
-      exDb.setUserList('dh2', 'dh2', '1');
-      exDb.setUserList('dh3', 'dh3', '0');
-      l_testObj = gTestObj("exDb.getUserList", exDb.getUserList());
+      exStore.setUserList('dh', 'dh', '1');
+      exStore.setUserList('dh2', 'dh2', '1');
+      exStore.setUserList('dh3', 'dh3', '0');
+      l_testObj = gTestObj("exStore.getUserList", exStore.getUserList());
       if( (l_testObj.obj['dh2'].pass == 'dh2') && (l_testObj.obj['dh3'].rem == false)
         && (l_testObj.obj['dh'].rem)) logOk(l_testObj); else l_rtn = logNo(l_testObj);
 
-      exDb.setUserList('dh2', 'dh2', '1');
-      l_testObj = gTestObj("exDb.getUser()", exDb.getUser());
+      exStore.setUserList('dh2', 'dh2', '1');
+      l_testObj = gTestObj("exStore.getUser()", exStore.getUser());
       if (l_testObj.obj.name == 'dh2' && l_testObj.obj.pass == 'dh2') logOk(l_testObj); else l_rtn = logNo(l_testObj);
-      l_testObj = gTestObj("exDb.getUser('dh')", exDb.getUser('dh'));
+      l_testObj = gTestObj("exStore.getUser('dh')", exStore.getUser('dh'));
       if (l_testObj.obj.name == 'dh' && l_testObj.obj.pass == 'dh') logOk(l_testObj); else l_rtn = logNo(l_testObj);
 
-      exDb.clearUserList();
-      l_testObj = gTestObj("exDb.clearUserList()", exDb.getUserList());
+      exStore.clearUserList();
+      l_testObj = gTestObj("exStore.clearUserList()", exStore.getUserList());
       if ( l_testObj.obj.hasOwnProperty('pass') ) l_rtn = logNo(l_testObj); else logOk(l_testObj);
 
       return l_rtn;
@@ -80,19 +75,53 @@ angular.module('exManic.test', ['exManic.services', 'exManic.controllers'])
 .factory('exTestLocalDb', function(exLocalDb){
   return {
     checkResult:function(){
-      exLocalDb.runSqlPromise('insert into user(NICKNAME,PASS,REMPASS) values("dh", "dhpass", 1)')
+      var l_rtn = true;
+      var l_testObj = gTestObj("exLocalDb.userNew", exLocalDb.userNew());
+      if (l_testObj.obj.hasOwnProperty('NICKNAME')) logOk(l_testObj); else l_rtn = logNo(l_testObj);
+      l_testObj = gTestObj("exLocalDb.taskNew", exLocalDb.taskNew());
+      if (l_testObj.obj.hasOwnProperty('UUID')) logOk(l_testObj); else l_rtn = logNo(l_testObj);
+
+      exLocalDb.runSqlPromise('delete from user where NICKNAME = "inserttest"')
       .then(
         function(aRow){
-          exLocalDb.runSql("select * from user where name =?", 'dh', function(aErr, aRow){
-            if (aErr) logNo( {name:"exTestLocalDb runSqlPromise ok but runSql err", obj: aErr } );
-            else
-              logOk({name:"exTestLocalDb runSqlPromise & runSql", obj: aRow})
-          })
-        },
-        function(aErr){
-          logNo( {name:"exTestLocalDb runSqlPromise2 ", obj: aErr } );
+          exLocalDb.runSqlPromise('insert into user(NICKNAME,PASS,REMPASS) values("inserttest", "pass", 1)')
+          .then(
+            function(aRow) {
+              exLocalDb.runSql("select * from user where NICKNAME =?", 'inserttest',
+                function (aErr, aRow) {
+                  if (aErr) logNo({name: "exTestLocalDb runSql select ", obj: aErr });
+                  else
+                    logOk({name: "exTestLocalDb runSql delete->insert->select", obj: aRow})
+                }
+              );
+            },
+            function(aErr){
+              logNo( {name:"exTestLocalDb runSqlPromise insert ", obj: aErr } );
+            }
+          )
         }
-      )
+      ,
+        function(aErr){
+          logNo( {name:"exTestLocalDb runSqlPromise delete ", obj: aErr } );
+        }
+      );
+
+      var l_user = exLocalDb.userNew();
+      l_user.NICKNAME = 'objinserttest';
+      l_user.PASS = 'pass';
+      l_user.REM = true;
+
+      var l_genUser = genSave(aUser, 'USER');
+      console.log('生成insert的user语句', l_genUser);
+      exLocalDb.appendix.setDirty(aUser);
+      l_genUser = genSave(aUser, 'USER');
+      console.log('生成update的user语句', l_genUser);
+
+      exLocalDb.appendix.setNew(aUser);
+      comSave(aUser, 'USER', function(aErr, aRow){
+        if (aErr) logNo({name: "comSave user ", obj: aErr });
+        else logOk( {name:"comSave user", obj: aRow } );
+      });
     }
   }
 })
