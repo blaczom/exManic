@@ -1,6 +1,6 @@
 // /* 测试脚本
 angular.module('exManic', ['ionic', 'exManic.services', 'exManic.controllers', 'exManic.test'])
-.run(function($ionicPlatform,exLocalDb,exTestUtil,exTestDb,exTestLocalDb,$timeout) {
+.run(function($ionicPlatform,exLocalDb,exTestUtil,exTestDb,exTestLocalDb,exTestAccess,$timeout) {
 // */
 
 /*  跳过测试脚本。
@@ -19,12 +19,13 @@ angular.module('exManic', ['ionic', 'exManic.services', 'exManic.controllers'])
     }
     exLocalDb.initDb();
 
-    // /* 这里是测试脚本，可以跳过。
-    $timeout( function() {console.log("====测试exUtil--", exTestUtil.checkResult()); },2000)
-    .then( function() { console.log("====测试exStore", exTestDb.checkResult());})
-    .then(function() { console.log("=====测试exLocalDb", exTestLocalDb.checkResult()); });
-
+     /* 这里是测试脚本，可以跳过。
+    $timeout( function() {console.log("====测试exUtil  ", exTestUtil.checkResult()); },2000)
+    .then( function() { console.log("====测试exStore   ", exTestDb.checkResult());})
+    .then(function() { console.log("=====测试exLocalDb ", exTestLocalDb.checkResult()); })
+    .then(function() { console.log("=====测试exAccess ", exTestAccess.checkResult()); });
     // */
+    console.log("=====测试exAccess ", exTestAccess.checkResult());
   });
 
 

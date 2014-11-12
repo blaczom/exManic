@@ -8,16 +8,23 @@ angular.module('exManic.controllers', [])
     $scope.friend = Friends.get($stateParams.friendId);
   })
 
-  .controller('registCtrl', function($scope) {
+  .controller('registCtrl', function($scope,exAccess,exStore) {
+    // userReg
+    var lp = $scope;
+    lp.user = exAccess.user.new();
+    // lp.user.authCode = "";
+    lp.rtnInfo = "";
+    lp.userReg = function(){
+      var l_cache = angular.copy(lp.user);
+      exAccess.userRegPromise(lp.user).
+        then(function (data) {
+          lp.rtnInfo = data.rtnInfo;
+          exStore.setUserList(l_cache.NICKNAME, l_cache.PASS, 0);
+        } , function (status) {
+          lp.rtnInfo = JSON.stringify(status);
+        });
+    };
   })
-  .controller('testCtrl', function($scope, exUtil){
-    $scope.test1 = exUtil.createUUID();
-
-
-    return;
-
-  } )
-
   .controller('loginCtrl', ['$scope','$location',function($scope,$location) {
 /*
         var lp = $scope;
@@ -43,7 +50,10 @@ angular.module('exManic.controllers', [])
         };
 */
       }])
-
+  .controller('testCtrl', function($scope, exUtil){
+    $scope.test1 = exUtil.createUUID();
+    return;
+  } )
   .controller('index', function($scope, $ionicModal) {
     $ionicModal.fromTemplateUrl('my-modal.html', {
       scope: $scope,
@@ -74,6 +84,5 @@ angular.module('exManic.controllers', [])
       // Execute action
     });
   });
-
 
 ;

@@ -11,8 +11,8 @@
           <input ng-model="user.NICKNAME"  placeholder="用户名" id="txtUserName" name="txtUserName"  type="text"  required autofocus>
         </label><label class="item item-input ex-block">  <input ng-model="user.PASS"  placeholder="密码" id="txtUserPwd" name="txtUserPwd" type="password" class="formex-control"  required/>
         </label><label class="item item-input ex-block">  <input ng-model="user.PASS2" placeholder="重复密码" id="txtUserRePwd"  name="txtUserRePwd" type="password" class="formex-control"  required/>
-        </label><label class="item item-input ex-block">  <input ng-model="user.authCode" placeholder="授权码" id="txtUserAuthCode"  name="txtUserAuthCode" type="text" class="formex-control"  required/>
-        </label>
+        <!-- </label><label class="item item-input ex-block">  <input ng-model="user.authCode" placeholder="授权码" id="txtUserAuthCode"  name="txtUserAuthCode" type="text" class="formex-control"  required/>
+         --></label>
         <div ng-show="(user.PASS != user.PASS2)"> 2次密码不匹配 </div>
         <button ng-disabled="(user.PASS != user.PASS2)" id="btnSub" class="button button-royal" type="submit">&nbsp;注&nbsp;&nbsp;册&nbsp;</button>
         <a class="button button-clear button-positive" href="#/login" role="button"> &nbsp;登 &nbsp; &nbsp;录 &nbsp;</a>

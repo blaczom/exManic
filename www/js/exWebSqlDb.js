@@ -12,10 +12,11 @@ var appendix = {
   setDirty : function(aParm) { aParm._exState = 'dirty' },
   setNew : function(aParm) { aParm._exState = 'new' },
   setClean : function(aParm) { aParm._exState = 'clean' }
-}
+};
 
 angular.module('exManic.services').
 factory('exLocalDb',['$q','$window','exStore','exUtil',function($q,$window,exStore,exUtil){
+  var g_list_run_sql = false;
   var gdb =  $window.openDatabase("exManicClient", '1.0', 'exManic Client Database', 2000000);
   var initDb = function() {
     exStore.log("--- checking databse file ---");
@@ -31,14 +32,14 @@ factory('exLocalDb',['$q','$window','exStore','exUtil',function($q,$window,exSto
     gdb.transaction(
       function (tx) {
         for (var i in l_run) {
-          // exStore.log(l_run[i]);
+          if (g_list_run_sql) exStore.log(l_run[i]);
           tx.executeSql(l_run[i], [],
             function(tx,success){},
             function(tx,err){ exStore.log(err.message) } );
         }
       },
       function (tx, err) { exStore.log('fail!!! create database failed!', err); },
-      function () { exStore.log(' -- check dabase successful over -- ');   }
+      function () { exStore.log(' -- check & create dabase successful over -- ');   }
     );
   };
   var trans2Json = function (aData){      // 将websql的返回数据集 {} ，转化为data数组的json记录。
@@ -51,26 +52,34 @@ factory('exLocalDb',['$q','$window','exStore','exUtil',function($q,$window,exSto
     if (aParam) { if (toString.apply(aParam) !== "[object Array]") aParam = [aParam]; }
     else
       aParam = [];
-    exStore.log("-- runSqlPromise with param: --" + aSql, aParam);
+    if (g_list_run_sql) exStore.log("-- runSqlPromise with param: --" + aSql, aParam);
     var deferred = $q.defer();
-    gdb.transaction( function(tx) {
+    var l_t_rtn;
+    gdb.transaction(
+      function(tx) {
         tx.executeSql(aSql, aParam,
-            function(tx, aData) { deferred.resolve(trans2Json(aData)) },
-            function(tx, error) { deferred.reject(error.message) }
+            function(tx, aData) { l_t_rtn = aData },
+            function(tx, error) { l_t_rtn = error }
         )
-    });
+      },
+      function (tx, aErr) { exStore.log('fail!!! comSave failed!', err); deferred.reject(l_t_rtn) },
+      function (tx, aData) { deferred.resolve(trans2Json(l_t_rtn)) }
+    );
     return deferred.promise;
   };
   var runSql = function(aSql, aParam, aCallback) {
     if (toString.apply(aParam) !== "[object Array]") aParam= [aParam];
-    exStore.log("-- runsql run here with param: --" + aSql, aParam);
+    if (g_list_run_sql) exStore.log("-- runsql run here with param: --" + aSql, aParam);
+    var l_t_rtn;
     gdb.transaction(
-        function(tx) {
-            tx.executeSql(aSql, aParam
-              ,function(tx, aData){exStore.log("client run sql ok:", aSql, aData); aCallback(null, trans2Json(aData) ) },
-               function(tx, aErr){ exStore.log("client run sql err:", aErr.message); aCallback(aErr.message, null) }
-            );
-        }
+      function(tx) {
+          tx.executeSql(aSql, aParam
+            ,function(tx, aData){  l_t_rtn = aData }
+            ,function(tx, aErr){ l_t_rtn = error }
+          );
+      },
+      function (tx, aErr) { exStore.log('fail!!! comSave failed!', err); aCallback(l_t_rtn, null) },
+      function (tx, aData) { aCallback(null, trans2Json(l_t_rtn) ) }
     );
   };
   var genSave = function (aObj, aTable) {    //  列名必须大写。第一字母小写的不生成。 返回sql和 执行参数。
@@ -129,18 +138,8 @@ factory('exLocalDb',['$q','$window','exStore','exUtil',function($q,$window,exSto
   };
   var comSave = function(aTarget, aTable, aCallback) {
       l_gen = genSave(aTarget, aTable);  // 返回一个数组，sql和后续参数。
-    exStore.log("com save run here with param: ", l_gen);
-      gdb.transaction(
-        function(tx) {
-          tx.executeSql(l_gen[0], l_gen[1],
-            function(tx, aData){ aCallback(null, trans2Json(aData)) },
-            function(tx, aErr){ exStore.log(aErr.message); aCallback(aErr.message, null) }
-          );
-        }
-      ,
-        function (tx, err) { exStore.log('fail!!! create database failed!', err); },
-        function () { exStore.log(' -- check dabase successful over -- ');   }
-      );
+    if (g_list_run_sql) exStore.log("com save run here with param: ", l_gen);
+      if (l_gen[0]) runSql(l_gen[0], l_gen[1], aCallback); else aCallback("comSave参数错误。", null);
     };
   var objUser = function(){
     this.NICKNAME = '';
@@ -160,6 +159,7 @@ factory('exLocalDb',['$q','$window','exStore','exUtil',function($q,$window,exSto
     };
 
   };
+  var gUser = new objUser();
   var objTask = function(){
     this.UUID = exUtil.createUUID();
     this.UPTASK = '';
@@ -187,7 +187,7 @@ factory('exLocalDb',['$q','$window','exStore','exUtil',function($q,$window,exSto
       runSql("select * from task where UUID=?", aUUID ,aCallback);
     };
   };
-
+  var gTask = new objTask();
   var getSubList = function(aSql, aParam, aWithSub, aCallback){  // 得到指定的任务下面的任务数量。
     runSql(aSql, aParam, function(aErr, aRtn) {
       if (aErr) aCallback(aErr);
@@ -231,8 +231,128 @@ factory('exLocalDb',['$q','$window','exStore','exUtil',function($q,$window,exSto
     });
   };
 
+  var res = {
+      json : function(aRtn){ return aRtn ; }  //JSON.stringify
+  };
+  var req = {session : {}};  // 登录的时候，要设置成当前用户-----------------
+  function checkLogin(){
+    if (req.session.loginUser) return true; else return false;  // 只信任服务器端的数据。
+  };
+  var simuRestCall = function(aUrl, aObject, aCallback) {  // 模拟远程访问操作。
+    lFunc = aObject['func'];  lExparm = aObject['ex_parm'];
+    exStore.log('simulate REST call ' , lFunc, ' ', lExparm);
+    if ("userlogin,userReg,exTools,".indexOf(lFunc + ",") < 0) {   // 不需要登录操作。
+      if (!checkLogin()) {
+        var l_rtn = rtnErr('未登录，请先登录。');
+        l_rtn.rtnCode = 0;
+        l_rtn.appendOper = 'login';   // rtnCode = 0的时候，就是有附加操作的时候。
+        aCallback(res.json(l_rtn));
+        return ;
+      }
+    }
+    switch (lFunc) {
+    case 'userChange': { // no user anymore, will change to change password. //
+      /*
+      var userName = lExparm.regUser.NICKNAME,
+      userPwd = lExparm.regUser.PASS;
+      md5Pass = lExparm.regUser.md5Pass; //var md5UserPwd = crypto.createHash('md5').update(userName + userPwd).digest('hex');
 
+      gUser.getByNickName(userName, function (aErr, aRtn) {
+      if (aErr) aCallback(res.json(rtnErr(aErr)));
+      else {
+      if (aRtn.length > 0) {      // 存在了。
+      l_user = aRtn[0];
+      console.log(l_user);
+      if (lExparm.regUser.oldPass == l_user.PASS) {
+      l_user.PASS = md5Pass;
+      l_user.MOBILE = lExparm.regUser.MOBILE;
+      l_user.EMAIL = lExparm.regUser.EMAIL;
+      l_user.IDCARD = lExparm.regUser.IDCARD;
+      l_user._exState = 'dirty';
+      gUser.save(l_user, function (aErr, aRtn) {
+      if (aErr)  aCallback(res.json(rtnErr("创建失败。请通知管理员")));
+      else aCallback(res.json(rtnMsg("更改成功。")));
+      });
+      }
+      else
+      aCallback(res.json(rtnMsg('原密码错误。')));
+      }
+      else {
+      aCallback(res.json(rtnMsg('imposible error ... 用户不存在了。。。')));
+      }
+      }
+      });*/
+      break;
+      }
+    case "userlogin":    { // lExparm.txtUserName, lExparm.txtUserPwd
+      var userName = lExparm.txtUserName, userPwd = lExparm.txtUserPwd, userRem = lExparm.remPass;
+      /*
+      gUser.getByNickName(userName, function (aErr, aRtn) {
+      if (aErr) aCallback(res.json(rtnErr(aErr)));
+      else {
+      if (aRtn.length > 0) {
+      console.log('login : ', aRtn);
+      var xtmp = userName + userPwd
+      var md5UserPwd = userPwd; // crypto.createHash('md5').update(xtmp).digest('hex'); 客户端已经搞定了。
+      if (aRtn[0].PASS == md5UserPwd) {
+      req.session.loginUser = userName;
+      req.session.userLevel = aRtn[0].LEVEL;
+      req.session.userGrant = aRtn[0].GRANT;
+      aCallback(res.json(rtnMsg('登录成功。')));
+      }
+      else {
+      aCallback(res.json(rtnErr('密码有误')));
+      }
+      }
+      else {
+      aCallback(res.json(rtnErr('用户不存在')));
+      }
+      }
+      }); */
+      break;
+    }
+    case "userReg":
+    {
+      var l_userName = lExparm.regUser.NICKNAME;
+      l_md5Pass = lExparm.regUser.md5Pass;
+      gUser.getByNickName(l_userName, function (aErr, aRtn) {
+        if (aErr) aCallback(res.json(rtnErr(aErr)));
+        else if (aRtn.length > 0) aCallback(res.json(rtnMsg('用户已经存在。')));
+        else {
+          //runSqlPromise("select * from createUser where uuid = '" + authCod + "'").then(
+          //function (aRow) {    if ((aRow || []).length > 0) {    // 不需要授权码。
+          l_userAdd = gUser.new();
+          l_userAdd.NICKNAME = l_userName;
+          l_userAdd.PASS = l_md5Pass;
+          gUser.save(l_userAdd, function (aErr, aRtn) {
+            if (aErr) aCallback(res.json(rtnErr("创建失败。请通知管理员")));
+            else aCallback(res.json(rtnMsg("创建成功，请登录")));
+          });
+        }
+      });
+      break;
+    }
+    case "exTools":
+      // lExparm. {sql: ls_sql, word: ls_admin};
+      if (lExparm.word == 'pub') {
+      runSql(lExparm.sql, [], function(aErr, aRtn) {
+        if (aErr) aCallback(res.json(rtnErr(aErr)));
+        else {
+          ls_rtn = rtnMsg("成功");
+          ls_rtn.exObj = aRtn?aRtn:[];  // 返回数组。
+          aCallback(res.json(ls_rtn));
+        }
+      })
+    }
+    else
+      aCallback(res.json(rtnErr("--授权码错误。" + lExparm.word)));
+    break;
 
+    default :
+      aCallback(res.json(rtnErr('不存在该请求：' + JSON.stringify(req.body))));
+      break;
+    }
+  } ;
 
   return {
     runSql: runSql,
@@ -245,7 +365,8 @@ factory('exLocalDb',['$q','$window','exStore','exUtil',function($q,$window,exSto
     memPoint : '1,1,2,4,7,15',
     appendix : appendix ,
     genSave : genSave ,
-    comSave : comSave
+    comSave : comSave ,
+    simuRestCall: simuRestCall
   };
 }]);
 

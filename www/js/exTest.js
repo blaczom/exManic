@@ -78,7 +78,7 @@ angular.module('exManic.test', ['exManic.services', 'exManic.controllers'])
     checkResult:function(){
 
       // 数据库runSqlPromise、runSql的测试机
-      /*exLocalDb.runSqlPromise('delete from user where NICKNAME = "inserttest"')
+      exLocalDb.runSqlPromise('delete from user where NICKNAME = "inserttest"')
       .then(
         function(aRow){
           exLocalDb.runSqlPromise('insert into user(NICKNAME,PASS,REMPASS) values("inserttest", "pass", 1)')
@@ -104,7 +104,7 @@ angular.module('exManic.test', ['exManic.services', 'exManic.controllers'])
           logNo( {name:"exTestLocalDb runSqlPromise delete ", obj: aErr } );
         }
       );
-      */
+
       // user 对象 测试 && exLocalDb.genSave && exLocalDb.comSave
       var l_rtn = true;
       var l_user = exLocalDb.user.new();
@@ -115,22 +115,23 @@ angular.module('exManic.test', ['exManic.services', 'exManic.controllers'])
       l_user.PASS = 'pass';
       l_user.REMPASS = true;
 
-      // exLocalDb.genSave
+      // exLocalDb.genSave insert
       var l_genUserSql = exLocalDb.genSave(l_user, 'USER');
       if (l_genUserSql[0] == "insert into USER(NICKNAME,PASS,REMPASS) values ( ?,?,?)" &&
         l_genUserSql[1][0] == l_user.NICKNAME && l_genUserSql[1][1] == l_user.PASS && l_genUserSql[1][2] == l_user.REMPASS)
-        logOk({name: "生成insert的user语句", obj: l_genUserSql});
-      else logNo({name: "生成insert的user语句", obj: l_genUserSql });
-
+        logOk({name: "genSave生成insert的user语句", obj: l_genUserSql});
+      else logNo({name: "genSave生成insert的user语句", obj: l_genUserSql });
+      // exLocalDb.genSave update
       exLocalDb.appendix.setDirty(l_user);
       l_genUserSql = exLocalDb.genSave(l_user, 'USER');
       if (l_genUserSql[0] == "update USER set NICKNAME=?,PASS=?,REMPASS=? where NICKNAME = 'objinserttest'" &&
         l_genUserSql[1][0] == l_user.NICKNAME && l_genUserSql[1][1] == l_user.PASS && l_genUserSql[1][2] == l_user.REMPASS)
-        logOk({name: "生成update的user语句", obj: l_genUserSql});
-      else logNo({name: "生成update的user语句", obj: l_genUserSql });
+        logOk({name: "genSave生成update的user语句", obj: l_genUserSql});
+      else logNo({name: "genSave生成update的user语句", obj: l_genUserSql });
 
       //  exLocalDb.comSave  && user.getByNickName, save, delete
       exLocalDb.appendix.setNew(l_user);
+      l_user.delete(l_user.NICKNAME, function(aErr, aRow) {});  // 清理一下如果有残余
       exLocalDb.comSave(l_user, 'USER', function(aErr, aRow){
         if (aErr) logNo({name: "comSave user ", obj: aErr });
         else {
@@ -145,10 +146,10 @@ angular.module('exManic.test', ['exManic.services', 'exManic.controllers'])
                 l_user.save(l_user, function(aErr, aRow){
                   if (aErr) logNo({name: "user save", obj: aErr });
                   else {
-                    logOk( {name:"user save", obj: aRow } );
+                    logOk( {name:"user save", obj: aRow } )
                     l_user.delete(l_user.NICKNAME, function(aErr, aRow){
                       if (aErr) logNo({name: "user delete", obj: aErr });
-                      else logOk( {name:"user delete", obj: aRow } );
+                      else logOk( {name:"user delete", obj: aRow } )
                     });
                   }
                 })
@@ -159,11 +160,13 @@ angular.module('exManic.test', ['exManic.services', 'exManic.controllers'])
           });
         }
       });
+
       var l_task = exLocalDb.task.new();
       l_testObj = gTestObj("exLocalDb.task.new", l_task);
       if (l_testObj.obj.hasOwnProperty('UUID')) logOk(l_testObj); else l_rtn = logNo(l_testObj);
       l_task.OWNER = 'dhtest';
       l_task.STATE = '计划';
+      l_task.delete(l_task.UUID, function (aErr, aRow) {}); // 清理一下如果有残余
       l_task.save(l_task, function(aErr, aRow){
         if (aErr) logNo({name: "task save", obj: aErr });
         else {
@@ -193,15 +196,17 @@ angular.module('exManic.test', ['exManic.services', 'exManic.controllers'])
         }
       });
 
-
-
-
     }
   }
 })
-.factory('exTestController', function(exLocalDb){
+.factory('exTestAccess', function(exAccess){
   return {
-    none:"loginCtrl"
+    checkResult:function() {
+      var l_rtn = true;
+      l_testObj = gTestObj("exAccess.user.new();", exAccess.user.new());
+      if (l_testObj.obj.hasOwnProperty('NICKNAME')) logOk(l_testObj); else l_rtn = logNo(l_testObj);
+      return l_rtn;
+    }
   }
 });
 
