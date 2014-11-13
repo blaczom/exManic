@@ -1,13 +1,13 @@
 angular.module('exManic.controllers', [])
 
   .controller('taskListCtrl', function($scope, Friends) {
+    var lp = $scope;
+    lp.title = "任务列表";
     $scope.friends = Friends.all();
   })
-
   .controller('taskDetailCtrl', function($scope, $stateParams, Friends) {
     $scope.friend = Friends.get($stateParams.friendId);
   })
-
   .controller('registCtrl', function($scope,exAccess,exStore) {
     // userReg
     var lp = $scope;
@@ -25,35 +25,40 @@ angular.module('exManic.controllers', [])
         });
     };
   })
-  .controller('loginCtrl', ['$scope','$location',function($scope,$location) {
-/*
-        var lp = $scope;
-        lp.user = exDb.userNew();
-        lp.user.NICKNAME =exDb.getUser();
-        lp.user.REMPASS =   exDb.getRem();
-        lp.runPlatform = exDb.getPlat();
-        if (lp.user.REMPASS) lp.user.PASS = exDb.getWord();
-        lp.rtnInfo = "";
-        lp.userLogin = function () {
-          exAccess.userLoginPromise(lp.user).then( function(data) {
-            if (data.rtnCode > 0) {
-              exDb.setUser(lp.user.NICKNAME);
-              exDb.setRem(lp.user.REMPASS);
-              exDb.setPlat(lp.runPlatform)
-              if (lp.user.REMPASS) exDb.setWord(lp.user.PASS);
-              $location.path('/taskList/main');
-            }
-            else{
-              lp.rtnInfo = data.rtnInfo;
-            }
-          }, function (error) {  lp.rtnInfo = JSON.stringify(status); });
-        };
-*/
-      }])
-  .controller('testCtrl', function($scope, exUtil){
-    $scope.test1 = exUtil.createUUID();
-    return;
-  } )
+  .controller('loginCtrl',  function($scope,$location,exAccess,exStore,$rootScope) {
+    var lp = $scope;
+    lp.user = exAccess.user.new();
+    var l_remUser = exStore.getUser();
+    lp.user.NICKNAME = l_remUser.name;   // getUser: function(){  // return {name:, pass:, rempass:}
+    lp.user.REMPASS =   l_remUser.rempass;
+    if (l_remUser.rempass) lp.user.pass = l_remUser.pass;
+    lp.rtnInfo = "";
+    lp.userLogin = function () {
+      exAccess.userLoginPromise(lp.user).then( function(data) {
+        if (data.rtnCode > 0) {
+          exStore.setUserList(lp.user.NICKNAME, lp.user.PASS, lp.user.REMPASS);
+          $rootScope.$broadcast('event:login');
+          $location.path('/tab/taskList');
+        }
+        else{
+          lp.rtnInfo = data.rtnInfo;
+        }
+      }, function (error) {  lp.rtnInfo = JSON.stringify(status); });
+    };
+  })
+  .controller('testCtrl', function($scope,exUtil,exAccess){
+    var lp = $scope;
+    lp.obj = { word:"", sql:""};
+    lp.test1 = exUtil.createUUID();
+    lp.postReq = function(){
+      exAccess.extoolsPromise( lp.obj )
+        .then(function (data) {
+          lp.txtReturn = JSON.stringify(data);
+        } , function (status) {
+          lp.txtReturn = JSON.stringify(status);
+        });
+    };
+  })
   .controller('index', function($scope, $ionicModal) {
     $ionicModal.fromTemplateUrl('my-modal.html', {
       scope: $scope,
@@ -83,6 +88,13 @@ angular.module('exManic.controllers', [])
     $scope.$on('modal.removed', function() {
       // Execute action
     });
-  });
+  })
+  .controller("indexTitleRightCtrl", function($scope, exStore){
+    var lp = $scope;
+    lp.loginUser = "";
+    $scope.$on('event:login', function(){
+      lp.loginUser = exStore.getUser();
+    });
 
+  });
 ;

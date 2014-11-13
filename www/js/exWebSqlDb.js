@@ -240,7 +240,7 @@ factory('exLocalDb',['$q','$window','exStore','exUtil',function($q,$window,exSto
   };
   var simuRestCall = function(aUrl, aObject, aCallback) {  // 模拟远程访问操作。
     lFunc = aObject['func'];  lExparm = aObject['ex_parm'];
-    exStore.log('simulate REST call ' , lFunc, ' ', lExparm);
+    exStore.log('simulate REST call ' , aObject);
     if ("userlogin,userReg,exTools,".indexOf(lFunc + ",") < 0) {   // 不需要登录操作。
       if (!checkLogin()) {
         var l_rtn = rtnErr('未登录，请先登录。');
@@ -285,34 +285,30 @@ factory('exLocalDb',['$q','$window','exStore','exUtil',function($q,$window,exSto
       break;
       }
     case "userlogin":    { // lExparm.txtUserName, lExparm.txtUserPwd
-      var userName = lExparm.txtUserName, userPwd = lExparm.txtUserPwd, userRem = lExparm.remPass;
-      /*
-      gUser.getByNickName(userName, function (aErr, aRtn) {
-      if (aErr) aCallback(res.json(rtnErr(aErr)));
-      else {
-      if (aRtn.length > 0) {
-      console.log('login : ', aRtn);
-      var xtmp = userName + userPwd
-      var md5UserPwd = userPwd; // crypto.createHash('md5').update(xtmp).digest('hex'); 客户端已经搞定了。
-      if (aRtn[0].PASS == md5UserPwd) {
-      req.session.loginUser = userName;
-      req.session.userLevel = aRtn[0].LEVEL;
-      req.session.userGrant = aRtn[0].GRANT;
-      aCallback(res.json(rtnMsg('登录成功。')));
-      }
-      else {
-      aCallback(res.json(rtnErr('密码有误')));
-      }
-      }
-      else {
-      aCallback(res.json(rtnErr('用户不存在')));
-      }
-      }
-      }); */
+      var l_userName = lExparm.txtUserName, l_userPwd = lExparm.txtUserPwd;
+
+      gUser.getByNickName(l_userName, function (aErr, aRtn) {
+        if (aErr) aCallback(res.json(rtnErr(aErr)));
+        else {
+          if (aRtn.length > 0) {
+            var l_tmp = l_userName + l_userPwd;
+            var l_md5UserPwd = l_userPwd; // crypto.createHash('md5').update(xtmp).digest('hex'); 客户端已经搞定了。
+            if (aRtn[0].PASS == l_md5UserPwd) {
+              req.session.loginUser = l_userName;
+              aCallback(res.json(rtnMsg('登录成功。')));
+            }
+            else {
+              aCallback(res.json(rtnErr('密码有误')));
+            }
+          }
+          else {
+            aCallback(res.json(rtnErr('用户不存在')));
+          }
+        }
+      });
       break;
     }
-    case "userReg":
-    {
+    case "userReg":{
       var l_userName = lExparm.regUser.NICKNAME;
       l_md5Pass = lExparm.regUser.md5Pass;
       gUser.getByNickName(l_userName, function (aErr, aRtn) {
@@ -332,22 +328,20 @@ factory('exLocalDb',['$q','$window','exStore','exUtil',function($q,$window,exSto
       });
       break;
     }
-    case "exTools":
-      // lExparm. {sql: ls_sql, word: ls_admin};
-      if (lExparm.word == 'pub') {
-      runSql(lExparm.sql, [], function(aErr, aRtn) {
-        if (aErr) aCallback(res.json(rtnErr(aErr)));
-        else {
-          ls_rtn = rtnMsg("成功");
-          ls_rtn.exObj = aRtn?aRtn:[];  // 返回数组。
-          aCallback(res.json(ls_rtn));
-        }
-      })
+    case "exTools": {
+      if (lExparm.word == 'pub')
+        runSql(lExparm.sql, [], function(aErr, aRtn) {
+          if (aErr) aCallback(res.json(rtnErr(aErr)));
+          else {
+            ls_rtn = rtnMsg("成功");
+            ls_rtn.exObj = aRtn?aRtn:[];  // 返回数组。
+            aCallback(res.json(ls_rtn));
+          }
+        })
+      else
+        aCallback(res.json(rtnErr("--授权码错误。" + lExparm.word)));
+      break;
     }
-    else
-      aCallback(res.json(rtnErr("--授权码错误。" + lExparm.word)));
-    break;
-
     default :
       aCallback(res.json(rtnErr('不存在该请求：' + JSON.stringify(req.body))));
       break;

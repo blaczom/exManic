@@ -25,7 +25,6 @@ angular.module('exManic', ['ionic', 'exManic.services', 'exManic.controllers'])
     .then(function() { console.log("=====测试exLocalDb ", exTestLocalDb.checkResult()); })
     .then(function() { console.log("=====测试exAccess ", exTestAccess.checkResult()); });
     // */
-    console.log("=====测试exAccess ", exTestAccess.checkResult());
   });
 
 
@@ -57,7 +56,6 @@ angular.module('exManic', ['ionic', 'exManic.services', 'exManic.controllers'])
         }
       }
     })
-
     .state('tab.regist', {
       url: '/reg',
       views: {
@@ -67,7 +65,6 @@ angular.module('exManic', ['ionic', 'exManic.services', 'exManic.controllers'])
         }
       }
     })
-
     .state('tab.login', {
       url: '/login',
       views: {
@@ -90,5 +87,6 @@ angular.module('exManic', ['ionic', 'exManic.services', 'exManic.controllers'])
   // if none of the above states are matched, use this as the fallback
   $urlRouterProvider.otherwise('/tab/taskList');
 
-});
+})
+;
 

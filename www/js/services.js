@@ -106,7 +106,7 @@ angular.module('exManic.services', ['angular-md5'])
     getUser: function(){  // return {name:, pass:, rempass:}
       var l_name = (arguments.length > 0)?arguments[0]:_currentUser;
       var l_user = JSON.parse(_userList)[l_name];
-      if (l_user) l_user.name = l_name;
+      if (l_user) l_user.name = l_name; else l_user = {name:'', pass:'', rempass:false};
       return l_user;
     },
     verifyBool: function (aParam){ return (aParam==true||aParam=="true")?true:false;  },
@@ -152,13 +152,14 @@ angular.module('exManic.services', ['angular-md5'])
       return deferred.promise;
     };
     var userReg = function(aobjUser) {
-      aobjUser.md5Pass = md5.createHash(aobjUser.NICKNAME + aobjUser.PASS);
-      aobjUser.PASS = aobjUser.PASS2 = "";  // 防止网络传输明码。
-      return httpCom('/rest',  { func: 'userReg',  ex_parm: { regUser: aobjUser} })
+      var l_user = angular.copy(aobjUser);
+      l_user.md5Pass = md5.createHash(l_user.NICKNAME + l_user.PASS);
+      l_user.PASS = l_user.PASS2 = "";  // 防止网络传输明码。
+      return httpCom('/rest',  { func: 'userReg',  ex_parm: { regUser: l_user} })
     };
     var userLogin = function(aobjUser) {
       return httpCom('/rest', { func: 'userlogin',   ex_parm: { txtUserName: aobjUser.NICKNAME,
-        txtUserPwd: md5.createHash(aobjUser.NICKNAME + aobjUser.PASS), remPass: aobjUser.REMPASS } })
+        txtUserPwd: md5.createHash(aobjUser.NICKNAME + aobjUser.PASS) } })
     };
     var userChange = function(aobjUser){
       var l_user = angular.copy(aobjUser);
