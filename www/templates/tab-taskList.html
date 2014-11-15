@@ -2,10 +2,20 @@
   <ion-content>
       <div ng-include="'templates/taskFilter.html'" ></div>
 
-      <ion-list>
-      <ion-item ng-repeat="friend in friends" type="item-text-wrap" href="#/tab/friend/{{friend.id}}">
-        {{friend.name}}
-      </ion-item>
-    </ion-list>
+      <a class="item item-inset ex-pad2" ng-repeat="friend in friends" type="item-text-wrap" href="#/tab/friend/{{friend.id}}">
+        <div class="ex-floatright"  >
+        <button class="button button-small">
+          Submit
+        </button>
+        <br/>
+        <button class="button button-small ">
+          Submit2
+        </button>
+        </div>
+          <div class="input-label ">
+            {{friend.name}} <br/><span>开始时间</span> -- <span>结束时间</span>
+          </div>
+      </a>
+
   </ion-content>
 </ion-view>

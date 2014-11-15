@@ -24,6 +24,7 @@
     margin-right:auto;
     text-align: center;
 }
+
 .ex-center4input {
     margin-left:auto;
     margin-right:auto;
@@ -37,8 +38,15 @@
 .ex-showme .ex-showme {
     border:1px solid red;
 }
-
-
+.ex-floatright {
+    float:right;
+}
+.ex-nopad {
+    padding: 0px;
+}
+.ex-pad2 {
+    padding: 2px;
+}
 input .ng-invalid {
     border: 1px solid red;
     background-color: pink;

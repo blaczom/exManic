@@ -17,7 +17,7 @@ angular.module('exManic', ['ionic', 'exManic.services', 'exManic.controllers'])
       // org.apache.cordova.statusbar required
       StatusBar.styleDefault();
     }
-    exLocalDb.initDb();
+    //exLocalDb.initDb();
 
      /* 这里是测试脚本，可以跳过。
     $timeout( function() {console.log("====测试exUtil  ", exTestUtil.checkResult()); },2000)
@@ -85,7 +85,7 @@ angular.module('exManic', ['ionic', 'exManic.services', 'exManic.controllers'])
     });
 
   // if none of the above states are matched, use this as the fallback
-  $urlRouterProvider.otherwise('/tab/taskList');
+  $urlRouterProvider.otherwise('/tab/login');
 
 })
 ;
