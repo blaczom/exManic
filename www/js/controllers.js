@@ -1,14 +1,13 @@
 angular.module('exManic.controllers', [])
 
-  .controller('taskListCtrl', function($scope, Friends) {
+  .controller('taskListCtrl', function($scope,exStore,exAccess,exLocalDb) {
     var lp = $scope;
-    app.controller("ctrlTaskList",['$scope','$location','exStore','exAccess','exUtil',function($scope,$location,exStore,exAccess,exUtil){
-      var lp = $scope;
-
       lp.ser = {    // 发送到server端。
-        seek: { seekContentFlag: false, seekContent : "",   // 是否search任务内容。
-                seekStateFlag : true,  seekState : ['计划','进行'],  // 是否search任务状态。
-                seekUserFlag : true, seekUser : exStore.getUser().name     // 是否按照用户搜索
+        seek: { showMe: true, // 是否显示查找框
+            seekContent : "",   // search任务内容。
+            seekStateFinish: false,  // search任务状态。
+            seekStatePlan: true,
+            seekStateDeal: true
         }
       };
       lp.loc = {     // 本地变量
@@ -18,10 +17,9 @@ angular.module('exManic.controllers', [])
         },
         curIndex : null,    //当前编辑的索引值
         rtnInfo : "",
-        planState : exAccess.planState,
+        planState : exAccess.taskState,
         editMode : "list"    // 是否在单记录编辑模式。
       };
-
       lp.taskEditMask = function(aShow){
         switch (aShow){
           case 'editsave':
@@ -110,7 +108,7 @@ angular.module('exManic.controllers', [])
               }
             }
           }, function (status) {
-            lploc..rtnInfo = JSON.stringify(status); }
+            lp.loc.rtnInfo = JSON.stringify(status); }
         );
       };
       lp.taskfilter = function(){
@@ -125,14 +123,14 @@ angular.module('exManic.controllers', [])
       lp.taskGet = function(){
         exAccess.taskListGetPromise(lp.loc.locate, lp.ser.seek)
           .then(function (data) {    // 得到新的消息
-            if (!exDb.checkRtn(data)) return ;
+            if (!exStore.checkRtn(data)) return ;
             lp.loc.rtnInfo = data.rtnInfo;
             var ltmp1 = data.exObj;
             if (ltmp1.length > 0){
               lp.loc.locate.curOffset = lp.loc.locate.curOffset + lp.loc.locate.limit;
               for (var i=0; i< ltmp1.length; i++)
                 ltmp1._exState = "clean";
-              lploc..taskSet = lp.loc.taskSet.concat(ltmp1); // 防止新增加的，再检索出来重复~~
+              lp.loc.taskSet = lp.loc.taskSet.concat(ltmp1); // 防止新增加的，再检索出来重复~~
               var hashKey  = {}, lRet = [];
               for (var i in lp.loc.taskSet) {
                 var key = lp.loc.taskSet[i].UUID;
@@ -151,7 +149,7 @@ angular.module('exManic.controllers', [])
           var lrtn = data.exObj;
           lp.loc.allOtherUser =[];
           console.log(lrtn);
-          for (var i in lrtn) {  if (lploc..task.OUGHT.indexOf(lrtn[i].NICKNAME + ",") < 0 ) lp.allOtherUser.push(lrtn[i].NICKNAME); };
+          for (var i in lrtn) {  if (lp.loc.task.OUGHT.indexOf(lrtn[i].NICKNAME + ",") < 0 ) lp.allOtherUser.push(lrtn[i].NICKNAME); };
           lp.loc.taskEditMask('userSelect');
         }, function (reason) { console.log(reason); lp.loc.allOtherUser = []  });
 
@@ -178,8 +176,6 @@ angular.module('exManic.controllers', [])
       };
       if (!(lp.loc.taskSet.length > 0))
         lp.taskfilter();  // 默认来一次。 //
-
-    }]);
   })
   .controller('taskDetailCtrl', function($scope, $stateParams, Friends) {
     $scope.friend = Friends.get($stateParams.friendId);
