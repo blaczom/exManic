@@ -187,7 +187,9 @@ angular.module('exManic.services', ['angular-md5'])
       workDeletePromise: function(aobjWork){return httpCom('/rest',{func:'workEditDelete',ex_parm:{msgObj:aobjWork}})},
       workGetPromise: function(aLocate, aFilter){ return httpCom('/rest',{ func: 'workListGet', ex_parm:{locate:aLocate,filter: aFilter}})},
       extoolsPromise: function(aParam){ return httpCom('/rest',{ func: 'exTools', ex_parm: aParam })},
-      user : l_user,
-      task : l_task
+      user : l_user,   // 以下变量，应该和数据库端进行同步。
+      task : l_task,
+      taskState : ['计划','进行','结束'],
+      memPoint : '1,1,2,4,7,15'
     };
 }]);
